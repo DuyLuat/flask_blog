@@ -1,10 +1,9 @@
 {% extends 'layout.html' %}
  
 {% block content %}
-<h2>{{ current_user.username }}</h2>
 <div class="content-section">
     <div class="media">
-        <img src="{{ img_file }}" class="rounded-circle account-img">
+        <img src="{{ image_file }}" class="rounded-circle account-img">
         <div class="media-body">
             <h2 class="account-heading">{{ current_user.username }}</h2>
             <p class="text-secondary">{{ current_user.email }}</p>
@@ -65,7 +64,7 @@
 
     </fieldset>
     <div class="form-group">
-        {{ form.submit(class=btn btn-outline-info) }}
+        {{ form.submit(class="btn btn-outline-info") }}
     </div>
 
     </form>

@@ -39,13 +39,12 @@ class UpdateAccountForm(FlaskForm):
     def validate_email(self, email):
         if email.data != current_user.email:
             user=User.query.filter_by(email=email.data).first()
-        if user:
-            raise ValidationError('Email đã tồn tại, vui lòng chọn email khác!')
+            if user:
+                raise ValidationError('Email đã tồn tại, vui lòng chọn email khác!')
 
 
 
 class LoginForm(FlaskForm):
-    username=StringField('Username', validators=[DataRequired(), Length(min=2, max=25)])
     email=StringField('Email', validators=[DataRequired(), Email()])
     password=PasswordField('Password', validators=[DataRequired()]) 
     remember=BooleanField('Remember Me')

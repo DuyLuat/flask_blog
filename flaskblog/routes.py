@@ -1,5 +1,5 @@
 from flask.globals import request
-from flaskblog import app, db, bcrypt
+from flaskblog import app, db, bcrypt 
 from flask import render_template, flash
 from flask_login import current_user, login_required, login_user, logout_user 
 from flask.helpers import url_for
@@ -94,14 +94,18 @@ def save_picture(form_picture):
     i=Image.open(form_picture)
     i.thumbnail(output_size)
     i.save(picture_path)
+    
     return picture_fn
 
+
 @app.route('/account', methods=['POST', 'GET'])
+@login_required
 def account():
     form=UpdateAccountForm()
     if form.validate_on_submit():
         if form.picture.data:
             picture_file=save_picture(form.picture.data)
+            # print(picture_file)
             current_user.image_file=picture_file
         current_user.username=form.username.data
         current_user.email=form.email.data
@@ -109,7 +113,7 @@ def account():
         flash('Tài khoản của bạn đã được cập nhật', "success")
         return redirect(url_for('account'))
     elif request.method=='GET':
-        form.data.username=current_user.username
-        form.data.email=current_user.email
-    image_file=url_for('static', filename='profile_pics' + current_user.image_file)
+        form.username.data=current_user.username
+        form.email.data=current_user.email
+    image_file=url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Account', form=form, image_file=image_file)
