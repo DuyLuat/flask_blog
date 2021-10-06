@@ -97,7 +97,6 @@ def account():
 
 
 
-
 @app.route('/post/new', methods=['POST', 'GET'])
 @login_required
 def new_post():
@@ -126,8 +125,8 @@ def update_post(post_id):
     post=Post.query.get_or_404(post_id)
     if post.author != current_user:
         abort(404)
-    
     form = PostForm()
+    
     if form.validate_on_submit():
         post.title=form.title.data
         post.content=form.content.data
@@ -138,3 +137,16 @@ def update_post(post_id):
         form.title.data=post.title
         form.content.data=post.content
     return render_template('create_post.html', title="Update Post", post=post, legend="Update Post")
+
+
+
+@app.route('/delete/<int:post_id>', methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post=Post.query.get_or_404(post_id)
+    if post.author!=current_user:
+        abort(403)
+    db.session.delete(post)
+    db.session.commit()
+    flash('Bài viếc của bạn vừa được xóa',"success")
+    return redirect(url_for('home'))
