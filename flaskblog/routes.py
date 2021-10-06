@@ -1,45 +1,24 @@
 from flask.globals import request
 from flaskblog import app, db, bcrypt 
-from flask import render_template, flash
+from flask import render_template, flash, abort
 from flask_login import current_user, login_required, login_user, logout_user 
 from flask.helpers import url_for
 from sqlalchemy.orm import backref
 from werkzeug.utils import redirect
 # from wtforms import form
-from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm
+from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
 from flaskblog.models import Post, User
 import secrets
 import os
 from PIL import Image
 
 
-posts=[
-    {
-        'title': 'Blog Post 1',
-        'author': 'Đào Duy Luật',
-        'content': 'This is firt post',
-        'date_post': '12/12/2020'
-    },
-    {
-        'title': 'Blog Post 2',
-        'author': 'Đào Duy Hưng',
-        'content': 'This is second post',
-        'date_post': '12/12/2021'
-    },
-    {
-        'title': 'Blog Post 3',
-        'author': 'Đào Ngân Hà',
-        'content': 'This is thirth post',
-        'date_post': '13/12/2021'
-    }
-]
-
 
 @app.route('/')
 @app.route('/home')
 def home():
-    title='This is test page'
-    return render_template('home.html', posts=posts, title=title)
+    posts=Post.query.all()
+    return render_template('home.html', posts=posts, title='Home Page')
 
 
 @app.route('/about')
@@ -94,7 +73,6 @@ def save_picture(form_picture):
     i=Image.open(form_picture)
     i.thumbnail(output_size)
     i.save(picture_path)
-    
     return picture_fn
 
 
@@ -116,3 +94,47 @@ def account():
         form.email.data=current_user.email
     image_file=url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Account', form=form, image_file=image_file)
+
+
+
+
+@app.route('/post/new', methods=['POST', 'GET'])
+@login_required
+def new_post():
+    
+    form=PostForm()
+
+    if form.validate_on_submit():    
+        post=Post(title=form.title.data, content=form.content.data, user_id=current_user.id)
+        db.session.add(post)
+        db.session.commit()
+
+        flash('Bài viết đã được tạo!','success')
+        return redirect(url_for('home'))
+    return render_template('create_post.html', form=form, title='New Post', legend='New Post')
+
+
+@app.route('/post/<int:post_id>', methods=['POST', 'GET'])
+def post(post_id):
+    post=Post.query.get_or_404(post_id)
+    return render_template('post.html', title=post.title, post=post)
+
+
+@app.route('/post/<int:post_id>/update', methods=['POST', 'GET'])
+@login_required
+def update_post(post_id):
+    post=Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(404)
+    
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title=form.title.data
+        post.content=form.content.data
+        db.session.commit()
+        flash('Bài viết của bản vừa được Update', "success")
+        return redirect(url_for('post', post_id=post.id))
+    elif request.method == 'GET':
+        form.title.data=post.title
+        form.content.data=post.content
+    return render_template('create_post.html', title="Update Post", post=post, legend="Update Post")

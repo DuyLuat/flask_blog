@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField
+from wtforms import StringField, SubmitField, PasswordField, TextAreaField
 from wtforms.fields.core import BooleanField
 from flask_wtf.file import FileField, FileAllowed
 from wtforms.validators import EqualTo, DataRequired, Email, Length, ValidationError
@@ -48,3 +48,9 @@ class LoginForm(FlaskForm):
     password=PasswordField('Password', validators=[DataRequired()]) 
     remember=BooleanField('Remember Me')
     submit=SubmitField('Sign Up')
+
+
+class PostForm(FlaskForm):
+    title=StringField('Title', validators=[DataRequired()])
+    content=TextAreaField('Content', validators=[DataRequired()]) 
+    submit=SubmitField('Submit')
