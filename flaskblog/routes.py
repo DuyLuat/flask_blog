@@ -17,7 +17,8 @@ from PIL import Image
 @app.route('/')
 @app.route('/home')
 def home():
-    posts=Post.query.all()
+    page=request.args.get('page', 1, type=int)
+    posts=Post.query.all().paginate(page=page, per_page=2)
     return render_template('home.html', posts=posts, title='Home Page')
 
 
@@ -122,11 +123,12 @@ def post(post_id):
 @app.route('/post/<int:post_id>/update', methods=['POST', 'GET'])
 @login_required
 def update_post(post_id):
+    form=PostForm()
     post=Post.query.get_or_404(post_id)
     if post.author != current_user:
         abort(404)
-    form = PostForm()
-    
+
+  
     if form.validate_on_submit():
         post.title=form.title.data
         post.content=form.content.data
@@ -136,7 +138,7 @@ def update_post(post_id):
     elif request.method == 'GET':
         form.title.data=post.title
         form.content.data=post.content
-    return render_template('create_post.html', title="Update Post", post=post, legend="Update Post")
+        return render_template('create_post.html', title="Update Post", post=post, legend="Update Post", form = form)
 
 
 
